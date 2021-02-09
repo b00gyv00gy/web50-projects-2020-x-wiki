@@ -6,12 +6,15 @@
 
 {% block body %}
     <h1>New Page</h1>
-    <form action = "{% url 'new_page' %}" method="POST">
+    <form id="new_page" action = "{% url 'new_page' %}" method="POST">
         {% csrf_token %}
         <p> <input type="text" name="title" placeholder="Title" required> </p>
-        <p> <input type="text" name="content" placeholder="Content"> </p>
-        <p> <input type="submit" name="save" placeholder="SAVE"> </p>
+        <p> <input type="submit" name="save" value="SAVE"> </p>
     </form>
+
+    <textarea name="content" form="new_page">
+
+    </textarea>
     
 
 {% endblock %}
