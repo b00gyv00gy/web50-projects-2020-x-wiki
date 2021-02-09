@@ -3,7 +3,10 @@ from django import forms
 from django.http import HttpResponseRedirect
 from django.urls import reverse
 from . import util
+import random
+import markdown2
 
+md=markdown2.Markdown()
 
 def index(request):
     return render(request, "encyclopedia/index.html", {
@@ -11,11 +14,15 @@ def index(request):
     })
 
 def get_entry(request, title):
-    return render(request, "encyclopedia/get_entry.html", {
-        "title": title,
-        "entry": util.get_entry(title)
-    })
-
+    if title in util.list_entries():
+        return render(request, "encyclopedia/get_entry.html", {
+            "title": title,
+            "entry": md.convert(util.get_entry(title))
+        })
+    else:
+        return render (request, "encyclopedia/error.html", {
+                "error_message": "Requested page was not found"
+            })
     
 def search_result(request):
 
@@ -34,7 +41,7 @@ def search_result(request):
         if full_match:
             return render(request, "encyclopedia/get_entry.html", {
             "title": title,
-            "entry": util.get_entry(title)
+            "entry": md.convert(util.get_entry(title))
             })
         elif partial_matches:
             return render(request, "encyclopedia/index.html", {
@@ -59,13 +66,33 @@ def new_page(request):
         util.save_entry(title, content)
         return render(request, "encyclopedia/get_entry.html", {
         "title": title,
-        "entry": util.get_entry(title)
+        "entry": md.convert(util.get_entry(title))
         })
 
     return render (request, "encyclopedia/new_page.html", {})
 
-def edit_page(request):
-    return render(request, "encyclopedia/edit_page.html", {})
+def edit_page(request, title):
+    
+    content = util.get_entry(title)
+    
+    if request.method == 'POST':
+        title = request.POST['title']
+        content = request.POST['content']
+        util.save_entry(title, content)
+        return render(request, "encyclopedia/get_entry.html", {
+        "title": title,
+        "entry": md.convert(util.get_entry(title))
+        })
+    
+    return render(request, "encyclopedia/edit_page.html", {
+        "title": title,
+        "content": content
+        })
+    
+def random_page (request):
+    title = random.choice(util.list_entries())
+    return render(request, "encyclopedia/get_entry.html", {
+        "title": title,
+        "entry": md.convert(util.get_entry(title))
+    })
 
-def edit_entry(request):
-    return render(request, "encyclopedia/edit_page.html", {})
